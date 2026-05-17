@@ -16,6 +16,7 @@ Secrets: add COHERE_API_KEY in .streamlit/secrets.toml or Streamlit Cloud Secret
 """
 
 import os
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import plotly.express as px
