@@ -674,7 +674,7 @@ if page == "Overview":
     with k2:
         kpi_card("Medical Incident Rate", med_rate, "warn")
     with k3:
-        kpi_card("Capacity Breach %", cap_breach, "info")
+        kpi_card("Capacity Breach", cap_breach, "info")
     with k4:
         kpi_card("Resolution Rate", f"{res_rate}%", "ok")
     with k5:
