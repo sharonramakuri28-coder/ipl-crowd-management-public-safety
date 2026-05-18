@@ -4,7 +4,7 @@ Run: streamlit run app.py
 Install: pip install streamlit pandas numpy plotly openpyxl cohere
 """
 
-import os
+import os 
 import numpy as np
 import pandas as pd
 import plotly.express as px
@@ -674,7 +674,7 @@ if page == "Overview":
     with k2:
         kpi_card("Medical Incident Rate", med_rate, "warn")
     with k3:
-        kpi_card("Capacity Breach %", f"{cap_breach}%", "info")
+        kpi_card("Capacity Breach %", cap_breach, "info")
     with k4:
         kpi_card("Resolution Rate", f"{res_rate}%", "ok")
     with k5:
