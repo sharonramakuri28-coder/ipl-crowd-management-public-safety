@@ -83,6 +83,15 @@ THEMES = {
         "palette": ["#DC2626", "#F97316", "#F59E0B", "#10B981", "#3B82F6", "#8B5CF6"],
         "crit_col": "#DC2626", "warn_col": "#F59E0B", "ok_col": "#10B981", "info_col": "#3B82F6",
     },
+    "Ask AI": {
+    "bg": "#F5F3FF", "sidebar": "#EDE9FE", "card": "#FFFFFF",
+    "accent": "#8B5CF6", "accent_lt": "#EDE9FE", "accent2": "#6D28D9",
+    "text": "#1E1B4B", "text2": "#6B7280", "border": "#C4B5FD",
+    "plot_bg": "#FFFFFF", "paper_bg": "#F5F3FF", "grid": "#EDE9FE",
+    "legend_rgba": "rgba(245,243,255,0.92)",
+    "palette": ["#8B5CF6", "#A78BFA", "#F59E0B", "#10B981", "#EF4444", "#3B82F6"],
+    "crit_col": "#EF4444", "warn_col": "#F59E0B", "ok_col": "#10B981", "info_col": "#8B5CF6",
+    },
 }
 
 PAGES = [
@@ -92,6 +101,7 @@ PAGES = [
     ("🔒", "Security"),
     ("📦", "Resource Planning"),
     ("🚨", "Risk Matrix"),
+    ("💬", "Ask AI"),
 ]
 
 if "active_page" not in st.session_state:
@@ -536,7 +546,48 @@ Dashboard Summary:
 
     except Exception as e:
         return f"❌ Cohere insight generation failed: {e}"
+def ask_ai_question(question, context_text, temperature_value=0.3, token_value=500):
+    api_key = get_cohere_key()
 
+    if not api_key:
+        return (
+            "⚠️ Cohere API key not found. Add your key in `.streamlit/secrets.toml` "
+            "or Streamlit Cloud Secrets."
+        )
+
+    try:
+        co = cohere.Client(api_key)
+
+        prompt = f"""
+You are an AI assistant inside an IPL Crowd Safety Management Dashboard.
+
+Answer the user's question using only the dashboard context below.
+
+Rules:
+- Answer in simple professional language.
+- Be concise.
+- If the question asks for action, give practical stadium operation recommendations.
+- Do not invent data outside the dashboard context.
+- Mention if the answer is based on selected filters.
+
+Dashboard Context:
+{context_text}
+
+User Question:
+{question}
+"""
+
+        response = co.chat(
+            model="command-r-plus-08-2024",
+            message=prompt,
+            temperature=temperature_value,
+            max_tokens=token_value,
+        )
+
+        return response.text
+
+    except Exception as e:
+        return f"❌ Q&A failed: {e}"
 
 def sfig(fig, t, h=320):
     fig.update_layout(
@@ -1851,6 +1902,133 @@ elif page == "Risk Matrix":
         mime="text/csv",
         use_container_width=True,
     )
+    # ═══════════════════════════════════════════════════════════
+# PAGE 7 — ASK AI
+# ═══════════════════════════════════════════════════════════
+elif page == "Ask AI":
+
+    page_header(
+        "💬",
+        "Ask AI — Dashboard Q&A Assistant",
+        "Ask questions about crowd risk, medical readiness, security, staffing, and priority zones"
+    )
+
+    k1, k2, k3, k4 = st.columns(4)
+
+    with k1:
+        kpi_card("Overall Risk Score", overall_risk_score, "crit")
+
+    with k2:
+        kpi_card("Critical Records", critical_zone_count, "crit")
+
+    with k3:
+        kpi_card("Anomaly Alerts", len(anomaly_table), "warn")
+
+    with k4:
+        kpi_card("Avg Queue Wait", f"{avg_queue} min", "info")
+
+    sec_label("Suggested Questions")
+
+    q1, q2, q3 = st.columns(3)
+
+    with q1:
+        if st.button("Which zones need urgent attention?", use_container_width=True):
+            st.session_state.ai_question = "Which zones need urgent attention and why?"
+
+    with q2:
+        if st.button("What should operations team do first?", use_container_width=True):
+            st.session_state.ai_question = "What should the stadium operations team do first based on current dashboard?"
+
+    with q3:
+        if st.button("Explain this dashboard simply", use_container_width=True):
+            st.session_state.ai_question = "Explain this dashboard output in simple presentation-friendly language."
+
+    q4, q5, q6 = st.columns(3)
+
+    with q4:
+        if st.button("Why is medical risk important?", use_container_width=True):
+            st.session_state.ai_question = "Why is medical risk important in the current selected filters?"
+
+    with q5:
+        if st.button("Which phase is most risky?", use_container_width=True):
+            st.session_state.ai_question = "Which match phase is most risky and what action should be taken?"
+
+    with q6:
+        if st.button("Give 5 interview talking points", use_container_width=True):
+            st.session_state.ai_question = "Give me 5 interview talking points for explaining this project."
+
+    if "ai_question" not in st.session_state:
+        st.session_state.ai_question = ""
+
+    user_question = st.text_area(
+        "Ask your own dashboard question",
+        value=st.session_state.ai_question,
+        placeholder="Example: Which stadium has the highest crowd risk and why?",
+        height=120
+    )
+
+    ask_btn = st.button("💬 Ask AI", use_container_width=True)
+
+    if ask_btn and user_question.strip():
+
+        qa_context = f"""
+Dashboard KPIs:
+Overall Risk Score: {overall_risk_score}
+Safety Risk Score: {safety_risk}
+Critical Records: {critical_zone_count}
+Monitor Records: {monitor_zone_count}
+Medical Incident Rate: {med_rate}
+Capacity Breach: {cap_breach}%
+Resolution Rate: {res_rate}%
+Ambulance Response: {amb_resp} minutes
+Average Queue Wait: {avg_queue} minutes
+Average Crowd Pressure: {avg_pressure}
+Average Bottleneck Risk: {avg_bottleneck}
+Average Heat Risk: {avg_heat}
+High Risk Zones: {high_risk_zones}
+Delayed Medical Zones: {delayed_med}
+Unauthorized Entries: {unauthorized}
+Counterfeit Ticket Cases: {counterfeit}
+Pitch Invasion Attempts: {pitch_inv}
+Fan Ejections: {fan_ej}
+Required Staff: {req_staff}
+Required Barricades: {req_barr}
+Medical Teams: {med_teams}
+Staff Adequacy Ratio: {staff_ratio}
+
+Top Risk Matrix:
+{risk_matrix.head(10).to_string(index=False)}
+
+Anomaly Table:
+{anomaly_table.head(10).to_string(index=False)}
+"""
+
+        with st.spinner("AI is analyzing your dashboard question..."):
+            answer = ask_ai_question(
+                user_question,
+                qa_context,
+                temperature_value=0.3,
+                token_value=700
+            )
+
+        st.markdown(f"""
+        <div class="ai-card">
+        <h3>💬 AI Answer</h3>
+        {answer.replace(chr(10), "<br>")}
+        </div>
+        """, unsafe_allow_html=True)
+
+    sec_label("Q&A Context Tables")
+
+    c1, c2 = st.columns(2)
+
+    with c1:
+        st.caption("Top risk records used by AI")
+        st.dataframe(risk_matrix.head(8), use_container_width=True, height=260)
+
+    with c2:
+        st.caption("Top anomaly records used by AI")
+        st.dataframe(anomaly_table.head(8), use_container_width=True, height=260)
 # ─────────────────────────────────────────────────────────
 # FOOTER
 # ─────────────────────────────────────────────────────────
