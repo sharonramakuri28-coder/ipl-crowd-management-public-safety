@@ -1902,7 +1902,7 @@ elif page == "Risk Matrix":
         mime="text/csv",
         use_container_width=True,
     )
-    # ═══════════════════════════════════════════════════════════
+   # ═══════════════════════════════════════════════════════════
 # PAGE 7 — ASK AI
 # ═══════════════════════════════════════════════════════════
 elif page == "Ask AI":
@@ -1912,6 +1912,12 @@ elif page == "Ask AI":
         "Ask AI — Dashboard Q&A Assistant",
         "Ask questions about crowd risk, medical readiness, security, staffing, and priority zones"
     )
+
+    if "ai_question" not in st.session_state:
+        st.session_state.ai_question = ""
+
+    if "ai_answer" not in st.session_state:
+        st.session_state.ai_answer = ""
 
     k1, k2, k3, k4 = st.columns(4)
 
@@ -1934,44 +1940,52 @@ elif page == "Ask AI":
     with q1:
         if st.button("Which zones need urgent attention?", use_container_width=True):
             st.session_state.ai_question = "Which zones need urgent attention and why?"
+            st.session_state.ai_answer = ""
 
     with q2:
         if st.button("What should operations team do first?", use_container_width=True):
             st.session_state.ai_question = "What should the stadium operations team do first based on current dashboard?"
+            st.session_state.ai_answer = ""
 
     with q3:
         if st.button("Explain this dashboard simply", use_container_width=True):
             st.session_state.ai_question = "Explain this dashboard output in simple presentation-friendly language."
+            st.session_state.ai_answer = ""
 
     q4, q5, q6 = st.columns(3)
 
     with q4:
         if st.button("Why is medical risk important?", use_container_width=True):
             st.session_state.ai_question = "Why is medical risk important in the current selected filters?"
+            st.session_state.ai_answer = ""
 
     with q5:
         if st.button("Which phase is most risky?", use_container_width=True):
             st.session_state.ai_question = "Which match phase is most risky and what action should be taken?"
+            st.session_state.ai_answer = ""
 
     with q6:
         if st.button("Give 5 interview talking points", use_container_width=True):
             st.session_state.ai_question = "Give me 5 interview talking points for explaining this project."
-
-    if "ai_question" not in st.session_state:
-        st.session_state.ai_question = ""
+            st.session_state.ai_answer = ""
 
     user_question = st.text_area(
         "Ask your own dashboard question",
         value=st.session_state.ai_question,
         placeholder="Example: Which stadium has the highest crowd risk and why?",
-        height=120
+        height=120,
+        key="qa_text_area"
     )
 
     ask_btn = st.button("💬 Ask AI", use_container_width=True)
 
-    if ask_btn and user_question.strip():
+    if ask_btn:
 
-        qa_context = f"""
+        if not user_question.strip():
+            st.warning("Please type or select a question first.")
+
+        else:
+            qa_context = f"""
 Dashboard KPIs:
 Overall Risk Score: {overall_risk_score}
 Safety Risk Score: {safety_risk}
@@ -2003,18 +2017,19 @@ Anomaly Table:
 {anomaly_table.head(10).to_string(index=False)}
 """
 
-        with st.spinner("AI is analyzing your dashboard question..."):
-            answer = ask_ai_question(
-                user_question,
-                qa_context,
-                temperature_value=0.3,
-                token_value=700
-            )
+            with st.spinner("AI is analyzing your dashboard question..."):
+                st.session_state.ai_answer = ask_ai_question(
+                    user_question,
+                    qa_context,
+                    temperature_value=0.3,
+                    token_value=700
+                )
 
+    if st.session_state.ai_answer:
         st.markdown(f"""
         <div class="ai-card">
         <h3>💬 AI Answer</h3>
-        {answer.replace(chr(10), "<br>")}
+        {st.session_state.ai_answer.replace(chr(10), "<br>")}
         </div>
         """, unsafe_allow_html=True)
 
