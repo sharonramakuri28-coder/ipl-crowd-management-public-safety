@@ -997,7 +997,7 @@ if page == "Overview":
     with k2:
         kpi_card("Medical Incident Rate", med_rate, "warn", "Per 1K people")
     with k3:
-        kpi_card("Capacity Breach", f"{cap_breach}%", "info")
+        kpi_card("Capacity Breach", cap_breach, "info")
     with k4:
         kpi_card("Resolution Rate", f"{res_rate}%", "ok")
     with k5:
@@ -1062,7 +1062,7 @@ if page == "Overview":
 
     with p1:
         st.markdown("##### 🚦 Capacity Breach Risk")
-        st.progress(min(cap_breach / 100, 1.0))
+        st.progress(min(cap_breach, 1.0))
         st.caption(f"{cap_breach}% zones near/exceeding threshold")
 
         st.markdown("##### 🌊 Crowd Pressure")
