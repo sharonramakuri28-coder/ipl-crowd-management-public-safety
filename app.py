@@ -1492,26 +1492,6 @@ elif page == "Security":
         kpi_card("Fan Ejections", f"{fan_ej:,}", "warn")
 
     # ─────────────────────────────────────────────
-    # REMOVE EMPTY SECURITY TABLE ISSUE
-    # ─────────────────────────────────────────────
-    sec_label("Security Priority Zones")
-
-    security_risk = risk_matrix[
-        risk_matrix["Main Risk Reason"].isin([
-            "High security activity"
-        ])
-    ].head(10)
-
-    if not security_risk.empty:
-        st.dataframe(
-            security_risk,
-            use_container_width=True,
-            height=300
-        )
-    else:
-        st.info("No major security risk zones detected for current filters.")
-
-    # ─────────────────────────────────────────────
     # CHARTS
     # ─────────────────────────────────────────────
     c1, c2 = st.columns([1.4, 1])
