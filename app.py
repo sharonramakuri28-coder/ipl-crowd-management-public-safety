@@ -1478,24 +1478,42 @@ elif page == "Security":
     )
 
     k1, k2, k3, k4 = st.columns(4)
+
     with k1:
         kpi_card("Unauthorized Entries", f"{unauthorized:,}", "crit")
+
     with k2:
         kpi_card("Counterfeit Cases", f"{counterfeit:,}", "warn")
+
     with k3:
         kpi_card("Pitch Invasions", f"{pitch_inv:,}", "crit")
+
     with k4:
         kpi_card("Fan Ejections", f"{fan_ej:,}", "warn")
 
+    # ─────────────────────────────────────────────
+    # REMOVE EMPTY SECURITY TABLE ISSUE
+    # ─────────────────────────────────────────────
     sec_label("Security Priority Zones")
+
     security_risk = risk_matrix[
         risk_matrix["Main Risk Reason"].isin([
             "High security activity"
         ])
     ].head(10)
 
-    st.dataframe(security_risk, use_container_width=True, height=300)
+    if not security_risk.empty:
+        st.dataframe(
+            security_risk,
+            use_container_width=True,
+            height=300
+        )
+    else:
+        st.info("No major security risk zones detected for current filters.")
 
+    # ─────────────────────────────────────────────
+    # CHARTS
+    # ─────────────────────────────────────────────
     c1, c2 = st.columns([1.4, 1])
 
     with c1:
@@ -1504,6 +1522,7 @@ elif page == "Security":
             .mean()
             .sort_values("phase_cat")
         )
+
         ua["phase"] = ua["phase_cat"].astype(str)
 
         fig = px.line(
@@ -1516,7 +1535,10 @@ elif page == "Security":
             title="Unauthorized Entry by Phase and Zone Type",
         )
 
-        st.plotly_chart(sfig(fig, t, 295), use_container_width=True)
+        st.plotly_chart(
+            sfig(fig, t, 295),
+            use_container_width=True
+        )
 
     with c2:
         sec_s = (
@@ -1535,7 +1557,11 @@ elif page == "Security":
         )
 
         fig.update_layout(showlegend=False)
-        st.plotly_chart(sfig(fig, t, 295), use_container_width=True)
+
+        st.plotly_chart(
+            sfig(fig, t, 295),
+            use_container_width=True
+        )
 
     c3, c4 = st.columns([1.2, 1])
 
@@ -1557,7 +1583,12 @@ elif page == "Security":
             title="Crowd Pressure vs Security Risk",
         )
 
-        st.plotly_chart(sfig(fig, t, 295), use_container_width=True)
+        fig.update_traces(marker_size=11)
+
+        st.plotly_chart(
+            sfig(fig, t, 295),
+            use_container_width=True
+        )
 
     with c4:
         sp = (
@@ -1565,6 +1596,7 @@ elif page == "Security":
             .mean()
             .sort_values("phase_cat")
         )
+
         sp["phase"] = sp["phase_cat"].astype(str)
 
         fig = px.bar(
@@ -1577,7 +1609,10 @@ elif page == "Security":
             title="Security Incidents by Phase and Zone Type",
         )
 
-        st.plotly_chart(sfig(fig, t, 295), use_container_width=True)
+        st.plotly_chart(
+            sfig(fig, t, 295),
+            use_container_width=True
+        )
 
 
 # ═══════════════════════════════════════════════════════════
@@ -1723,6 +1758,7 @@ elif page == "Resource Planning":
 # PAGE 6 — RISK MATRIX
 # ═══════════════════════════════════════════════════════════
 elif page == "Risk Matrix":
+
     page_header(
         "🚨",
         "AI Risk Priority Matrix & Anomaly Intelligence",
@@ -1730,17 +1766,29 @@ elif page == "Risk Matrix":
     )
 
     k1, k2, k3, k4 = st.columns(4)
+
     with k1:
         kpi_card("Overall Risk Score", overall_risk_score, "crit")
+
     with k2:
         kpi_card("Critical Records", critical_zone_count, "crit")
+
     with k3:
         kpi_card("Monitor Records", monitor_zone_count, "warn")
+
     with k4:
         kpi_card("Anomaly Alerts", len(anomaly_table), "info")
 
+    # ─────────────────────────────────────────────
+    # RISK MATRIX TABLE
+    # ─────────────────────────────────────────────
     sec_label("Top 15 Risk Priority Matrix")
-    st.dataframe(risk_matrix, use_container_width=True, height=420)
+
+    st.dataframe(
+        risk_matrix,
+        use_container_width=True,
+        height=420
+    )
 
     st.download_button(
         "⬇️ Download Full Risk Priority Matrix",
@@ -1750,11 +1798,15 @@ elif page == "Risk Matrix":
         use_container_width=True,
     )
 
+    # ─────────────────────────────────────────────
+    # CHARTS
+    # ─────────────────────────────────────────────
     sec_label("Risk Score by Stadium and Zone Type")
 
     c1, c2 = st.columns([1.3, 1])
 
     with c1:
+
         stadium_risk = (
             f.groupby(["stadium_name", "zone_type"], as_index=False)["risk_score"]
             .mean()
@@ -1771,10 +1823,15 @@ elif page == "Risk Matrix":
             title="Average Risk Score by Stadium and Zone Type",
         )
 
-        st.plotly_chart(sfig(fig, t, 360), use_container_width=True)
+        st.plotly_chart(
+            sfig(fig, t, 360),
+            use_container_width=True
+        )
 
     with c2:
+
         risk_dist = f["risk_band"].value_counts().reset_index()
+
         risk_dist.columns = ["Risk Band", "Count"]
 
         fig = px.pie(
@@ -1791,10 +1848,21 @@ elif page == "Risk Matrix":
             title="Risk Band Distribution",
         )
 
-        st.plotly_chart(sfig(fig, t, 360), use_container_width=True)
+        st.plotly_chart(
+            sfig(fig, t, 360),
+            use_container_width=True
+        )
 
+    # ─────────────────────────────────────────────
+    # ANOMALY TABLE
+    # ─────────────────────────────────────────────
     sec_label("Anomaly Detection Table")
-    st.dataframe(anomaly_table, use_container_width=True, height=360)
+
+    st.dataframe(
+        anomaly_table,
+        use_container_width=True,
+        height=360
+    )
 
     st.download_button(
         "⬇️ Download Anomaly Detection CSV",
@@ -1803,23 +1871,6 @@ elif page == "Risk Matrix":
         mime="text/csv",
         use_container_width=True,
     )
-
-    sec_label("Project Limitations & Assumptions")
-
-    st.markdown(f"""
-    <div class="ai-card">
-    <h3>📌 Important Notes for Presentation</h3>
-    <ul>
-        <li><b>Dataset type:</b> This dashboard uses static/simulated IPL crowd safety data, not live sensor data.</li>
-        <li><b>Risk thresholds:</b> Values like bottleneck ≥ 70 and ambulance response ≥ 10 minutes are analytical assumptions.</li>
-        <li><b>AI limitation:</b> Cohere generates insights from summarized KPIs and risk tables, not full real-time CCTV or IoT streams.</li>
-        <li><b>Real-world upgrade:</b> This system can be improved using live gate scanners, CCTV crowd counts, weather APIs, and emergency team tracking.</li>
-        <li><b>Business value:</b> Power BI is used for executive reporting, while Streamlit is used as an AI-powered operational decision app.</li>
-    </ul>
-    </div>
-    """, unsafe_allow_html=True)
-
-
 # ─────────────────────────────────────────────────────────
 # FOOTER
 # ─────────────────────────────────────────────────────────
